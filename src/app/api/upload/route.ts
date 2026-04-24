@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         const res = await db.query(
           `INSERT INTO premios (operador, nome, premio, data_premio, turno, ficheiro_origem)
            VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT ON CONSTRAINT uq_premios_dedup DO NOTHING
+           ON CONFLICT DO NOTHING
            RETURNING id`,
           [p.operador, p.nome, p.premio, p.dataPremio || null, p.turno || null, file.name]
         );
