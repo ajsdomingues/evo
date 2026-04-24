@@ -11,42 +11,72 @@ e visualizar a evolução do prémio por operador ao longo do tempo.
 - `xlsx` para parsing de ficheiros
 - Recharts para gráficos
 
-## Setup
+## Instalação numa Debian 13 fresca
 
-1. Instalar dependências:
+Comandos como root (se não for root, prefixa `sudo`).
 
-   ```
-   npm install
-   ```
+### 1. Dependências do sistema
 
-2. Criar uma base de dados PostgreSQL local, p. ex.:
+```bash
+apt update
+apt install -y curl ca-certificates gnupg git npm postgresql postgresql-contrib
+```
 
-   ```
-   createdb evo
-   ```
+> Se a versão do `nodejs` vinda do apt for < 20, instala via NodeSource:
+> ```bash
+> curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+> apt install -y nodejs
+> ```
 
-3. Copiar `.env.example` para `.env` e preencher `DATABASE_URL`:
+Verifica:
+```bash
+node -v    # >= 20
+npm -v
+psql --version
+```
 
-   ```
-   cp .env.example .env
-   ```
+### 2. Arrancar Postgres e criar a base de dados
 
-4. Correr em modo dev:
+```bash
+service postgresql start
+su - postgres -c "createuser -s root"
+su - postgres -c "createdb evo"
+su - postgres -c "psql -c \"ALTER USER root WITH PASSWORD 'evo';\""
+```
 
-   ```
-   npm run dev
-   ```
+### 3. Clonar e instalar o projeto
 
-   A tabela `premios` é criada automaticamente na primeira chamada a qualquer
-   endpoint.
+```bash
+cd /root
+git clone https://github.com/ajsdomingues/evo.git
+cd evo
+npm install
+```
 
-5. Abrir http://localhost:3000
+### 4. Configurar ligação à BD
+
+```bash
+echo 'DATABASE_URL=postgres://root:evo@localhost:5432/evo' > .env
+```
+
+### 5. Correr em dev
+
+```bash
+npm run dev
+```
+
+Abre `http://localhost:3000` ou, se acedes de outra máquina, `http://<ip>:3000`.
+Para permitir um IP específico de rede, edita `next.config.ts` e acrescenta-o
+a `allowedDevOrigins`.
+
+A tabela `premios` é criada automaticamente no primeiro request.
 
 ## Produção
 
-```
+```bash
 npm run build
-npm run start
+npm run start      # porta 3000 por defeito
+# npm run start -- -p 3200   # outra porta
 ```
 
 ## Formato dos ficheiros xls
